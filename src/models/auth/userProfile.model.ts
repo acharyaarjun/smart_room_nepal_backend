@@ -125,10 +125,10 @@ class UserProfile extends Model<IUserProfile, Optional<IUserProfile, "id">> {
   @BelongsTo(() => User)
   user!: User;
 
-  @BelongsTo(() => Media)
+  @BelongsTo(() => Media, { foreignKey: "avatarId", as: "avatar" })
   avatar!: Media;
 
-  @BelongsTo(() => Media)
+  @BelongsTo(() => Media, { foreignKey: "documentId", as: "document" })
   document!: Media;
 }
 
