@@ -105,6 +105,8 @@ Main room listing information.
 - **longitude**
 - **latitude**
 - **address**
+- **type**
+- **maxCapacity**
 - **isFeatured**
 
 ---
