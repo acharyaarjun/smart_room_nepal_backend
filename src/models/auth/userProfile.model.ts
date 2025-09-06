@@ -10,7 +10,7 @@ import {
   UpdatedAt,
 } from "sequelize-typescript";
 import { User, Media } from "@/models";
-import { Gender } from "@/enums";
+import { Gender, MaritalStatus, OccupationStatus, UserStatus } from "@/enums";
 import { Optional } from "sequelize";
 
 /**
@@ -24,7 +24,11 @@ interface IUserProfile {
   gender?: Gender;
   dob?: Date;
   userId?: number;
-  avatarId?: string;
+  occupationStatus?: OccupationStatus;
+  maritalStatus?: MaritalStatus;
+  status?: UserStatus;
+  avatarId?: number;
+  documentId?: number;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -67,24 +71,12 @@ class UserProfile extends Model<IUserProfile, Optional<IUserProfile, "id">> {
   })
   dob!: Date;
 
-  @CreatedAt
-  createdAt!: Date;
-
-  @UpdatedAt
-  updatedAt!: Date;
-
-  @DeletedAt
-  deletedAt!: Date;
-
   @ForeignKey(() => User)
   @Column({
     type: DataType.BIGINT,
     allowNull: false,
   })
   userId!: number;
-
-  @BelongsTo(() => User)
-  user!: User;
 
   @ForeignKey(() => Media)
   @Column({
@@ -94,8 +86,50 @@ class UserProfile extends Model<IUserProfile, Optional<IUserProfile, "id">> {
   })
   avatarId!: number;
 
+  @ForeignKey(() => Media)
+  @Column({
+    type: DataType.BIGINT,
+    allowNull: true,
+    onDelete: "SET NULL",
+  })
+  documentId!: number;
+
+  @Column({
+    type: DataType.ENUM(...Object.values(OccupationStatus)),
+    allowNull: true,
+  })
+  occupationStatus!: OccupationStatus;
+
+  @Column({
+    type: DataType.ENUM(...Object.values(MaritalStatus)),
+    allowNull: true,
+  })
+  maritalStatus!: MaritalStatus;
+
+  @Column({
+    type: DataType.ENUM(...Object.values(UserStatus)),
+    allowNull: false,
+    defaultValue: UserStatus.PENDING,
+  })
+  status!: UserStatus;
+
+  @CreatedAt
+  createdAt!: Date;
+
+  @UpdatedAt
+  updatedAt!: Date;
+
+  @DeletedAt
+  deletedAt!: Date;
+
+  @BelongsTo(() => User)
+  user!: User;
+
   @BelongsTo(() => Media)
   avatar!: Media;
+
+  @BelongsTo(() => Media)
+  document!: Media;
 }
 
 export default UserProfile;
