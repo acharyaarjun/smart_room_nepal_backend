@@ -1,8 +1,15 @@
 import { NextFunction, Request, Response } from "express";
 import ApiError from "@/utils/apiError";
 import ApiResponse from "@/utils/apiResponse";
-import { LoginHistory, Media, User, UserProfile } from "@/models";
-import { ApiErrorCode, LoginMethod } from "@/enums";
+import {
+  LoginHistory,
+  Media,
+  MembershipType,
+  Payment,
+  User,
+  UserProfile,
+} from "@/models";
+import { ApiErrorCode, LoginMethod, PaymentStatus, Role } from "@/enums";
 import env from "@/utils/validateEnv";
 import { getDateAfterMinutes } from "@/helpers/helper";
 
@@ -19,6 +26,7 @@ const login = async (
     attributes: [
       "id",
       "username",
+      "role",
       "email",
       "fullName",
       "isEmailVerified",
@@ -104,6 +112,36 @@ const login = async (
     res,
   });
 
+  let totalLimit = 1;
+  if (user.role === Role.HOST) {
+    // get user memberships
+    const userMemberships = await Payment.findAll({
+      attributes: ["id", "status"],
+      include: [
+        {
+          model: MembershipType,
+          attributes: ["id", "name", "limit"],
+        },
+      ],
+      where: {
+        userId: user.id,
+        status: PaymentStatus.COMPLETED,
+      },
+    });
+
+    if (userMemberships && userMemberships.length > 0) {
+      totalLimit = userMemberships.reduce((acc, membership) => {
+        if (
+          membership.membershipType &&
+          typeof membership.membershipType.limit === "number"
+        ) {
+          return acc + membership.membershipType.limit;
+        }
+        return acc;
+      }, 0);
+    }
+  }
+
   const responseData = {
     user: await User.findByPk(user.id, {
       attributes: [
@@ -144,6 +182,8 @@ const login = async (
     }),
     accessToken,
     refreshToken,
+    availableCredits:
+      user.role === Role.HOST ? (totalLimit > 0 ? totalLimit : 0) : undefined,
   };
 
   new ApiResponse({

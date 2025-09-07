@@ -1,6 +1,6 @@
 # 📌 Smart Room Nepal
 
-## Generating private and public keys for JWT
+<!-- ## Generating private and public keys for JWT
 
 ### Generate private key
 
@@ -17,7 +17,7 @@ openssl rsa -in jwt-private-key.pem \
 -pubout \
 -outform PEM \
 -out jwt-public-key.pem
-```
+``` -->
 
 <!-- Modals -->
 

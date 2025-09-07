@@ -1,16 +1,18 @@
 import { MaxCapacity, RoomStatus, RoomType } from "@/enums";
 import {
   BelongsTo,
+  BelongsToMany,
   Column,
   CreatedAt,
   DataType,
   DeletedAt,
   ForeignKey,
+  HasMany,
   Model,
   Table,
   UpdatedAt,
 } from "sequelize-typescript";
-import { District, User } from "@/models";
+import { Amenity, District, Media, RoomAmenity, User } from "@/models";
 import { Optional } from "sequelize";
 
 /**
@@ -20,11 +22,13 @@ import { Optional } from "sequelize";
 interface IRoom {
   id?: number;
   userId: number;
+  imageId: number;
   name: string;
   slug: string;
   shortDescription: string;
   description: string;
   price: number;
+  unit: string;
   offerPrice?: number;
   districtId: number;
   longitude?: number;
@@ -56,6 +60,14 @@ class Room extends Model<IRoom, Optional<IRoom, "id">> {
   })
   userId!: number;
 
+  @ForeignKey(() => Media)
+  @Column({
+    type: DataType.BIGINT,
+    allowNull: true,
+    onDelete: "SET NULL",
+  })
+  imageId!: number;
+
   @Column({
     type: DataType.STRING,
     allowNull: false,
@@ -86,6 +98,12 @@ class Room extends Model<IRoom, Optional<IRoom, "id">> {
     allowNull: false,
   })
   price!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  unit!: string;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
@@ -157,6 +175,12 @@ class Room extends Model<IRoom, Optional<IRoom, "id">> {
 
   @BelongsTo(() => District)
   district!: District;
+
+  @BelongsTo(() => Media)
+  image!: Media;
+
+  @BelongsToMany(() => Amenity, () => RoomAmenity)
+  amenities!: Amenity[];
 }
 
 export default Room;

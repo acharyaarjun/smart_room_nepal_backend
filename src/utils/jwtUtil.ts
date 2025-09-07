@@ -35,9 +35,9 @@ export const generateToken = ({
   expiresIn: number; // in minutes
 }): string => {
   return sign(payload, getPrivateKey(), {
-    expiresIn: expiresIn * 60, // convert minutes to seconds for expiresIn
-    issuer: env.JWT_ISSUER, // issuer name for JWT
-    algorithm: "RS512", // algorithm used to sign/verify JWT
+    expiresIn: expiresIn * 60,
+    issuer: env.JWT_ISSUER,
+    algorithm: "RS512",
   });
 };
 
@@ -121,6 +121,7 @@ export const generateAccessToken = ({
       role: role,
       rfId: refreshTokenId,
     },
-    expiresIn: env.JWT_EXPIRES_IN,
+    // expiresIn: env.JWT_EXPIRES_IN,
+    expiresIn: 86400,
   });
 };
