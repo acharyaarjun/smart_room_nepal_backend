@@ -123,11 +123,6 @@ class User extends Model<IUser, Optional<IUser, "id">> {
     }
   }
 
-  @AfterCreate
-  static async createUserProfile(user: User) {
-    await UserProfile.create({ userId: user.id });
-  }
-
   @AfterBulkCreate
   static async createUserProfiles(users: readonly User[]) {
     for (const user of users) {

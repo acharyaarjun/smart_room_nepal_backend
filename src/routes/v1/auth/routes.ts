@@ -7,6 +7,8 @@ import { Router } from "express";
 import validate from "@/validators/validate";
 import { login, logout, register } from "@/controllers/v1/auth";
 import { authMiddleware } from "@/middlewares";
+import { uploadImageFileMiddleware } from "@/middlewares/multer.middleware";
+import { FileStorageDirectory } from "@/enums";
 
 const router: Router = Router();
 /**
@@ -21,7 +23,15 @@ router.post("/login", loginValidator(), validate, login);
  * @description Register a new user
  * @access Public
  */
-router.post("/register", registerValidator(), validate, register);
+router.post(
+  "/register",
+  uploadImageFileMiddleware({
+    directory: FileStorageDirectory.DOCUMENTS,
+  }).single("document"),
+  registerValidator(),
+  validate,
+  register
+);
 
 /**
  * @route POST /api/v1/auth/logout

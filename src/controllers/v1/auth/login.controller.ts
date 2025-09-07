@@ -119,10 +119,23 @@ const login = async (
       include: [
         {
           model: UserProfile,
-          attributes: ["phone", "gender", "dob"],
+          attributes: [
+            "id",
+            "phone",
+            "gender",
+            "dob",
+            "occupationStatus",
+            "maritalStatus",
+          ],
           include: [
             {
               model: Media,
+              as: "avatar",
+              attributes: ["fileName", "path", "mimeType", "url"],
+            },
+            {
+              model: Media,
+              as: "document",
               attributes: ["fileName", "path", "mimeType", "url"],
             },
           ],

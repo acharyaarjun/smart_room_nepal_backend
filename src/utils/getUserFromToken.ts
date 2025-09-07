@@ -85,6 +85,12 @@ export const getUserById = async (id: string | number) => {
         include: [
           {
             model: Media,
+            as: "avatar",
+            attributes: ["fileName", "path", "mimeType", "url"],
+          },
+          {
+            model: Media,
+            as: "document",
             attributes: ["fileName", "path", "mimeType", "url"],
           },
         ],
