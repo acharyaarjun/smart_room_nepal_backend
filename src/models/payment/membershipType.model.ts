@@ -17,6 +17,7 @@ import {
 interface IMembershipType {
   id?: number;
   name: string;
+  slug: string;
   description?: string;
   limit: number;
   price: number;
@@ -45,6 +46,13 @@ class MembershipType extends Model<
     unique: true,
   })
   name!: string;
+
+  @Column({
+    type: DataType.STRING(100),
+    allowNull: false,
+    unique: true,
+  })
+  slug!: string;
 
   @Column({
     type: DataType.TEXT,

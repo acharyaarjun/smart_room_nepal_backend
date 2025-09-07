@@ -5,8 +5,7 @@ import {
   update,
 } from "@/controllers/v1/admin/amenity";
 import { Role } from "@/enums";
-import { checkRoleMiddleware } from "@/middlewares";
-import auth from "@/middlewares/auth.middleware";
+import { authMiddleware, checkRoleMiddleware } from "@/middlewares";
 import {
   createValidator,
   deleteValidator,
@@ -25,7 +24,7 @@ const router: Router = Router();
  */
 router.post(
   "/",
-  auth,
+  authMiddleware,
   checkRoleMiddleware([Role.ADMIN]),
   createValidator(),
   validate,
@@ -37,7 +36,14 @@ router.post(
  * @description Get all amenities
  * @access Public
  */
-router.get("/", getByAdminValidator(), validate, getByAdmin);
+router.get(
+  "/",
+  authMiddleware,
+  checkRoleMiddleware([Role.ADMIN, Role.HOST]),
+  getByAdminValidator(),
+  validate,
+  getByAdmin
+);
 
 /**
  * @route DELETE /api/v1/amenities/:id
@@ -46,7 +52,7 @@ router.get("/", getByAdminValidator(), validate, getByAdmin);
  */
 router.delete(
   "/:id",
-  auth,
+  authMiddleware,
   checkRoleMiddleware([Role.ADMIN]),
   deleteValidator(),
   validate,
@@ -60,7 +66,7 @@ router.delete(
  */
 router.put(
   "/:id",
-  auth,
+  authMiddleware,
   checkRoleMiddleware([Role.ADMIN]),
   updateValidator(),
   validate,
