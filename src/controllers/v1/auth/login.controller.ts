@@ -6,6 +6,7 @@ import {
   Media,
   MembershipType,
   Payment,
+  Room,
   User,
   UserProfile,
 } from "@/models";
@@ -114,6 +115,12 @@ const login = async (
 
   let totalLimit = 1;
   if (user.role === Role.HOST) {
+    const rooms = await Room.count({
+      where: {
+        userId: user.id,
+      },
+    });
+
     // get user memberships
     const userMemberships = await Payment.findAll({
       attributes: ["id", "status"],
@@ -140,6 +147,8 @@ const login = async (
         return acc;
       }, 0);
     }
+
+    totalLimit = totalLimit - rooms;
   }
 
   const responseData = {
