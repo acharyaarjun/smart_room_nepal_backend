@@ -21,6 +21,7 @@ interface IRoom {
   id?: number;
   userId: number;
   name: string;
+  slug: string;
   shortDescription: string;
   description: string;
   price: number;
@@ -56,10 +57,17 @@ class Room extends Model<IRoom, Optional<IRoom, "id">> {
   userId!: number;
 
   @Column({
-    type: DataType.STRING(100),
+    type: DataType.STRING,
     allowNull: false,
   })
   name!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    unique: true,
+  })
+  slug!: string;
 
   @Column({
     type: DataType.STRING(255),

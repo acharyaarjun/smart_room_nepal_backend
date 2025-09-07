@@ -1,5 +1,4 @@
 import ApiResponse from "@/utils/apiResponse";
-import { sequelize } from "./../../../../config/db.config";
 import { Request, Response } from "express";
 
 const destroy = async (req: Request, res: Response) => {

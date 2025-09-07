@@ -19,6 +19,7 @@ import { Media } from "@/models";
 interface IDistrict {
   id?: number;
   name: string;
+  slug: string;
   description: string;
   imageId?: number;
   createdAt?: Date;
@@ -45,6 +46,13 @@ class District extends Model<IDistrict, Optional<IDistrict, "id">> {
     unique: true,
   })
   name!: string;
+
+  @Column({
+    type: DataType.STRING(100),
+    allowNull: false,
+    unique: true,
+  })
+  slug!: string;
 
   @Column({
     type: DataType.TEXT,
