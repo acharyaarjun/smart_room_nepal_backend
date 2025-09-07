@@ -6,14 +6,6 @@ import { deleteUnusedMulterFilesOnError } from "@/helpers";
 import env from "@/utils/validateEnv";
 import { UniqueConstraintError, ValidationError } from "sequelize";
 
-/**
- * @function errorHandlerMiddleware
- * @description Express error handler middleware
- * @param {Error} err - Error object
- * @param {Request} req - Express request object
- * @param {Response} res - Express response object
- * @returns {Response} - Response object
- */
 const errorHandlerMiddleware = (
   err: Error,
   req: Request,
@@ -22,9 +14,10 @@ const errorHandlerMiddleware = (
 ) => {
   let error: ApiError;
 
-  // check if error is an instance of ApiError
   if (!(err instanceof ApiError)) {
     if (err instanceof MulterError) {
+      console.log("🔴 MulterError:", err.message);
+      console.log("Stack:", err.stack);
       error = new ApiError({
         status: 400,
         message: err.message,
@@ -38,6 +31,11 @@ const errorHandlerMiddleware = (
     } else {
       if (err instanceof ValidationError) {
         // Handle Sequelize validation error
+        console.log("🔴 Sequelize ValidationError:");
+        console.log("Message:", err.message);
+        console.log("Errors:", err.errors);
+        console.log("Stack:", err.stack);
+
         const errors = err.errors.map((error) => ({
           [error.path ?? "field"]: error.message,
         }));
@@ -49,6 +47,11 @@ const errorHandlerMiddleware = (
           stack: err.stack,
         });
       } else if (err instanceof UniqueConstraintError) {
+        console.log("🔴 Sequelize UniqueConstraintError:");
+        console.log("Message:", err.message);
+        console.log("Errors:", err.errors);
+        console.log("Stack:", err.stack);
+
         const errors = err.errors.map((error) => ({
           [error.path ?? "field"]: error.message,
         }));
@@ -60,6 +63,11 @@ const errorHandlerMiddleware = (
           stack: err.stack,
         });
       } else {
+        console.log("🔴 Generic Error:");
+        console.log("Message:", err.message);
+        console.log("Name:", err.name);
+        console.log("Stack:", err.stack);
+
         error = new ApiError({
           status: 500,
           message: "Something went wrong",
@@ -73,6 +81,13 @@ const errorHandlerMiddleware = (
       }
     }
   } else {
+    console.log("🔴 ApiError:");
+    console.log("Status:", err.status);
+    console.log("Message:", err.message);
+    console.log("Errors:", err.errors);
+    console.log("Code:", err.code);
+    console.log("Stack:", err.stack);
+
     error = new ApiError({
       status: err.status,
       message: err.message,
@@ -91,6 +106,11 @@ const errorHandlerMiddleware = (
 
   // delete unused multer files on error
   deleteUnusedMulterFilesOnError(req);
+
+  console.log("🔴 Final Error Response:");
+  console.log("Status:", error.status);
+  console.log("Message:", error.message);
+  console.log("Response:", response);
 
   logger.error(err);
 

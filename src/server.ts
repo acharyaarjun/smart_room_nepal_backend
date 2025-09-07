@@ -20,7 +20,7 @@ const initiateServer = async () => {
 
 (async () => {
   try {
-    await connectDB({ force: false, alter: true });
+    await connectDB();
     await initiateServer();
   } catch (error) {
     logger.error(`Error starting server: ${error}`);

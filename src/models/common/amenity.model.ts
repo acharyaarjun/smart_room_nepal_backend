@@ -16,7 +16,7 @@ import {
 interface IAmenity {
   id?: number;
   name: string;
-  description: string;
+  description?: string;
   icon?: string;
   createdAt?: Date;
   updatedAt?: Date;
