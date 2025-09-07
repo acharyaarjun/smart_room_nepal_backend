@@ -20,6 +20,10 @@ const checkLimit = () => {
         );
       }
 
+      if (req.user.role === Role.ADMIN) {
+        return next();
+      }
+
       // Check if user has required role
       if (Role.HOST !== req.user.role) {
         logger.error(

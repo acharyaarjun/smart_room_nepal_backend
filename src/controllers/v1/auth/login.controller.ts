@@ -182,7 +182,8 @@ const login = async (
     }),
     accessToken,
     refreshToken,
-    availableCredits: user.role === Role.HOST ? totalLimit : undefined,
+    availableCredits:
+      user.role === Role.HOST ? (totalLimit > 0 ? totalLimit : 0) : undefined,
   };
 
   new ApiResponse({
