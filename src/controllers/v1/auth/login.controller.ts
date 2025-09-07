@@ -120,6 +120,7 @@ const login = async (
         {
           model: UserProfile,
           attributes: [
+            "id",
             "phone",
             "gender",
             "dob",

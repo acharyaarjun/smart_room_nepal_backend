@@ -1,4 +1,6 @@
+import mime from "mime-types";
 import env from "@/utils/validateEnv";
+import sanitizeHtml from "sanitize-html";
 export const getDateAfterMinutes = (minutes: number): Date => {
   return new Date(Date.now() + minutes * 60000); // 60000 ms = 1 minute
 };
@@ -16,4 +18,25 @@ export const generateOTP = (length: number): string => {
   }
 
   return OTP;
+};
+
+export const detectMimeType = (fileName: string): string => {
+  return mime.lookup(fileName) || "application/octet-stream";
+};
+
+export const stripHtml = (str: string, length?: string | number): string => {
+  if (!str) return "";
+
+  // Remove all HTML tags and attributes
+  const text = sanitizeHtml(str, {
+    allowedTags: [],
+    allowedAttributes: {},
+  });
+
+  if (typeof length === "string") {
+    length = parseInt(length, 10);
+  }
+
+  // Truncate if length is specified
+  return text.slice(0, length || 100);
 };

@@ -78,19 +78,15 @@ class UserProfile extends Model<IUserProfile, Optional<IUserProfile, "id">> {
   })
   userId!: number;
 
-  @ForeignKey(() => Media)
   @Column({
     type: DataType.BIGINT,
     allowNull: true,
-    onDelete: "SET NULL",
   })
   avatarId!: number;
 
-  @ForeignKey(() => Media)
   @Column({
     type: DataType.BIGINT,
     allowNull: true,
-    onDelete: "SET NULL",
   })
   documentId!: number;
 
@@ -122,7 +118,7 @@ class UserProfile extends Model<IUserProfile, Optional<IUserProfile, "id">> {
   @DeletedAt
   deletedAt!: Date;
 
-  @BelongsTo(() => User)
+  @BelongsTo(() => User, { foreignKey: "userId" })
   user!: User;
 
   @BelongsTo(() => Media, { foreignKey: "avatarId", as: "avatar" })

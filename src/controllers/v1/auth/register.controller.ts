@@ -1,11 +1,20 @@
 import { Request, Response } from "express";
 import { logger } from "@/logger";
 import ApiResponse from "@/utils/apiResponse";
-import { EmailVerification, User } from "@/models";
+import { EmailVerification, Media, User, UserProfile } from "@/models";
 import { otpTemplate } from "@/templates";
 import { getDateAfterMinutes } from "@/helpers/helper";
 import { hashPassword } from "@/utils/passwordUtil";
-import { Role } from "@/enums";
+import {
+  FileStorageDirectory,
+  Gender,
+  MaritalStatus,
+  OccupationStatus,
+  Role,
+  UserStatus,
+} from "@/enums";
+import ApiError from "@/utils/apiError";
+import { createMedia } from "@/controllers/v1/media";
 
 const register = async (req: Request, res: Response): Promise<void> => {
   // get request body
@@ -13,11 +22,37 @@ const register = async (req: Request, res: Response): Promise<void> => {
     email,
     password,
     fullName,
+    gender,
+    dob,
+    phone,
+    occupationStatus,
+    maritalStatus,
+    role,
   }: {
     email: string;
     password: string;
     fullName: string;
+    gender: Gender;
+    dob: Date;
+    phone: string;
+    occupationStatus: OccupationStatus;
+    maritalStatus: MaritalStatus;
+    role: Role;
   } = req.body;
+
+  const file = req.file;
+
+  if (!file && role === Role.HOST) {
+    throw new ApiError({
+      status: 400,
+      message: "Document is required",
+      errors: [
+        {
+          document: "Document is required",
+        },
+      ],
+    });
+  }
 
   // generate auto username from email
   let username = email.split("@")[0];
@@ -37,15 +72,35 @@ const register = async (req: Request, res: Response): Promise<void> => {
   }
 
   // create new user
-  const user = await User.build({
+  const user = await User.create({
     fullName,
     email,
     username,
     password,
-    isEmailVerified: false,
-    isEnabled: false,
-    role: Role.USER,
-  }).save();
+    isEmailVerified: true,
+    isEnabled: true,
+    role: role || Role.USER,
+  });
+
+  let media: Media | null = null;
+  if (file) {
+    media = await createMedia({
+      user,
+      file,
+      directory: FileStorageDirectory.DOCUMENTS,
+    });
+  }
+  await UserProfile.create({
+    userId: user.id,
+    phone,
+    isPhoneVerified: false,
+    gender,
+    dob,
+    occupationStatus,
+    maritalStatus,
+    documentId: file ? media?.id : undefined,
+    status: user.role === Role.HOST ? UserStatus.PENDING : UserStatus.ACTIVE,
+  });
 
   // generate otp
   //   const otp = generateOTP(6);
