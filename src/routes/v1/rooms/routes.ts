@@ -25,8 +25,10 @@ import {
 } from "@/validators/v1/rooms";
 import validate from "@/validators/validate";
 import { Router } from "express";
+import RoomAmenityRoutes from "./amenity/routes";
 
 const router: Router = Router();
+router.use("/amenities", RoomAmenityRoutes);
 
 /**
  * @route POST /api/v1/rooms
