@@ -19,6 +19,7 @@ import { User, Room } from "@/models";
  */
 interface IRoomRequest {
   id?: number;
+  token: string;
   userId: number;
   roomId: number;
   isFixedDate: boolean;
@@ -44,6 +45,13 @@ interface IRoomRequest {
 class RoomRequest extends Model<IRoomRequest, Optional<IRoomRequest, "id">> {
   @Column({ autoIncrement: true, primaryKey: true, type: DataType.BIGINT })
   public id!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    unique: true,
+  })
+  token!: string;
 
   @ForeignKey(() => User)
   @Column({

@@ -1,4 +1,4 @@
-import { MaxCapacity, Role, RoomStatus, RoomType } from "@/enums";
+import { MaxCapacity, Role, RoomStatus, RoomType, RoomUnit } from "@/enums";
 import { District, Room } from "@/models";
 import { body, param, ValidationChain } from "express-validator";
 import { Op } from "sequelize";
@@ -90,13 +90,12 @@ const updateValidator = (): ValidationChain[] => {
       .isString()
       .withMessage("Unit must be a string")
       .bail()
-      .isLength({ min: 2 })
-      .withMessage("Unit is too short")
-      .bail()
-      .isLength({ max: 40 })
-      .withMessage("Unit is too long")
-      .bail()
-      .trim(),
+      .isIn(Object.values(RoomUnit))
+      .withMessage(
+        `Unit must be one of the following: ${Object.values(RoomUnit).join(
+          ", "
+        )}`
+      ),
     body("price")
       .optional()
       .isDecimal({ decimal_digits: "0,2" })

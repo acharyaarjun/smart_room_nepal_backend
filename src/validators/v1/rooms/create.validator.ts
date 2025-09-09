@@ -1,4 +1,4 @@
-import { MaxCapacity, Role, RoomStatus, RoomType } from "@/enums";
+import { MaxCapacity, Role, RoomStatus, RoomType, RoomUnit } from "@/enums";
 import { District, Room, User } from "@/models";
 import { body, ValidationChain } from "express-validator";
 import { Op } from "sequelize";
@@ -117,16 +117,12 @@ const createValidator = (): ValidationChain[] => {
       .exists()
       .withMessage("Unit is required")
       .bail()
-      .isString()
-      .withMessage("Unit must be a string")
-      .bail()
-      .isLength({ min: 2 })
-      .withMessage("Unit is too short")
-      .bail()
-      .isLength({ max: 40 })
-      .withMessage("Unit is too long")
-      .bail()
-      .trim(),
+      .isIn(Object.values(RoomUnit))
+      .withMessage(
+        `Unit must be one of the following: ${Object.values(RoomUnit).join(
+          ", "
+        )}`
+      ),
     body("districtId")
       .exists()
       .withMessage("District ID is required")
