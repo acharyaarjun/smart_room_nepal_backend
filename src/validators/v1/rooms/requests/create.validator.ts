@@ -53,6 +53,9 @@ const createValidator = (): ValidationChain[] => {
       .isBoolean()
       .withMessage("isFixedDate must be a boolean")
       .custom((value, { req }) => {
+        if (!req.room) {
+          throw new Error("Room must be specified");
+        }
         // only allow isFixedDate is room.unit is RoomUnit.DAY
         if (req.room.unit !== RoomUnit.DAY && value === true) {
           throw new Error(
