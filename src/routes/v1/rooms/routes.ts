@@ -27,10 +27,12 @@ import validate from "@/validators/validate";
 import { Router } from "express";
 import RoomAmenityRoutes from "./amenity/routes";
 import RoomMediaRoutes from "./media/routes";
+import RoomRequestRoutes from "./requests/routes";
 
 const router: Router = Router();
 router.use("/amenities", RoomAmenityRoutes);
 router.use("/medias", RoomMediaRoutes);
+router.use("/requests", RoomRequestRoutes);
 
 /**
  * @route POST /api/v1/rooms

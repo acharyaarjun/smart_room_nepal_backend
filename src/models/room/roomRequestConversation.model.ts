@@ -18,6 +18,7 @@ interface IRoomRequestConversation {
   id?: number;
   roomRequestId: number;
   sender: MessageSender;
+  isRead: boolean;
   message: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -59,6 +60,13 @@ class RoomRequestConversation extends Model<
     allowNull: false,
   })
   message!: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  })
+  isRead!: boolean;
 
   @CreatedAt
   createdAt!: Date;

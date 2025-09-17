@@ -14,3 +14,4 @@ export { default as MaxCapacity } from "./maxCapacity";
 export { default as RoomStatus } from "./roomStatus";
 export { default as RoomRequestStatus } from "./roomRequestStatus";
 export { default as MessageSender } from "./messageSender";
+export { default as RoomUnit } from "./roomUnit";
