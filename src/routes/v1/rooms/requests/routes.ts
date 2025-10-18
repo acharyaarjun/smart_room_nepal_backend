@@ -16,8 +16,12 @@ import {
 } from "@/validators/v1/rooms/requests";
 import validate from "@/validators/validate";
 import { Router } from "express";
+import ConversationRoutes from "./conversations/routes";
 
 const router: Router = Router();
+
+// Mount conversation routes
+router.use("/:roomRequestId/conversations", ConversationRoutes);
 
 /**
  * @route POST /api/v1/room/requests/:slug
