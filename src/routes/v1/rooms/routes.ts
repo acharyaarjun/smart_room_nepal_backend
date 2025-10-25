@@ -12,6 +12,7 @@ import {
   authMiddleware,
   checkLimitMiddleware,
   checkRoleMiddleware,
+  optionalAuthMiddleware,
 } from "@/middlewares";
 import { uploadImageFileMiddleware } from "@/middlewares/multer.middleware";
 import {
@@ -29,12 +30,16 @@ import RoomAmenityRoutes from "./amenity/routes";
 import RoomMediaRoutes from "./media/routes";
 import RoomRequestRoutes from "./requests/routes";
 import RoomReviewRoutes from "./reviews/routes";
+import RecentlyViewedRoutes from "./recentlyViewed/routes";
+import WishlistRoutes from "./wishlist/routes";
 
 const router: Router = Router();
 router.use("/amenities", RoomAmenityRoutes);
 router.use("/medias", RoomMediaRoutes);
 router.use("/requests", RoomRequestRoutes);
 router.use("/reviews", RoomReviewRoutes);
+router.use("/recently-viewed", RecentlyViewedRoutes);
+router.use("/wishlist", WishlistRoutes);
 
 /**
  * @route POST /api/v1/rooms
@@ -124,10 +129,11 @@ router.get(
 /**
  * @route GET /api/v1/rooms/:slug/user
  * @description Get a single room for user
- * @access Public
+ * @access Public (but tracks recently viewed if authenticated)
  */
 router.get(
   "/:slug/user",
+  optionalAuthMiddleware,
   getSingleForUserValidator(),
   validate,
   getSingleForUser

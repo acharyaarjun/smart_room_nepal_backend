@@ -1,9 +1,17 @@
-import { District, Media, Room, User, UserProfile } from "@/models";
+import {
+  District,
+  Media,
+  RecentlyViewed,
+  Room,
+  User,
+  UserProfile,
+} from "@/models";
 import ApiResponse from "@/utils/apiResponse";
 import { Request, Response } from "express";
 
 const getSingleForUser = async (req: Request, res: Response) => {
   const room = req.room;
+  const user = req.user;
   const fetchedRoom = await Room.findByPk(room.id, {
     attributes: [
       "id",
@@ -50,6 +58,24 @@ const getSingleForUser = async (req: Request, res: Response) => {
       },
     ],
   });
+
+  // Track recently viewed - only if user is authenticated
+  if (user) {
+    // Remove existing entry if it exists
+    await RecentlyViewed.destroy({
+      where: {
+        userId: user.id,
+        roomId: room.id,
+      },
+      force: true,
+    });
+
+    // Add new entry
+    await RecentlyViewed.create({
+      userId: user.id,
+      roomId: room.id,
+    });
+  }
 
   new ApiResponse({
     status: 200,
