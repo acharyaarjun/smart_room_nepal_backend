@@ -12,6 +12,7 @@ import { cleanEnv, num, port, str } from "envalid";
 export default cleanEnv(process.env, {
   APP_NAME: str(),
   APP_PORT: port(),
+  SOCKET_PORT: port({ default: 3001 }), // Default to 3001 if not specified
   APP_URL: str(),
 
   CLIENT_URL: str(),

@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Socket.IO Room Request Tester</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        opacity: 0.9;
+        font-size: 1.1em;
+      }
+
+      .status-bar {
+        background: #f8f9fa;
+        padding: 15px 30px;
+        border-bottom: 2px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+
+      .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .status-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #dc3545;
+        animation: pulse 2s infinite;
+      }
+
+      .status-dot.connected {
+        background: #28a745;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .main-content {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        min-height: 600px;
+      }
+
+      .sidebar {
+        background: #f8f9fa;
+        border-right: 2px solid #e9ecef;
+        padding: 20px;
+        overflow-y: auto;
+      }
+
+      .section {
+        margin-bottom: 25px;
+      }
+
+      .section h3 {
+        color: #495057;
+        margin-bottom: 15px;
+        font-size: 1.1em;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 8px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #495057;
+        font-weight: 500;
+        font-size: 0.9em;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 0.95em;
+        transition: border-color 0.3s;
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-bottom: 10px;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+
+      .btn-success:hover {
+        background: #218838;
+      }
+
+      .btn-danger {
+        background: #dc3545;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: #c82333;
+      }
+
+      .btn-warning {
+        background: #ffc107;
+        color: #212529;
+      }
+
+      .btn-warning:hover {
+        background: #e0a800;
+      }
+
+      .btn-info {
+        background: #17a2b8;
+        color: white;
+      }
+
+      .btn-info:hover {
+        background: #138496;
+      }
+
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: #5a6268;
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+
+      .chat-area {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .chat-header {
+        background: #f8f9fa;
+        padding: 20px 30px;
+        border-bottom: 2px solid #e9ecef;
+      }
+
+      .chat-header h2 {
+        color: #495057;
+        margin-bottom: 5px;
+      }
+
+      .chat-header p {
+        color: #6c757d;
+        font-size: 0.9em;
+      }
+
+      .messages-container {
+        flex: 1;
+        padding: 20px 30px;
+        overflow-y: auto;
+        background: #ffffff;
+      }
+
+      .message {
+        margin-bottom: 15px;
+        padding: 12px 15px;
+        border-radius: 12px;
+        max-width: 80%;
+        word-wrap: break-word;
+        animation: slideIn 0.3s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .message.sent {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        margin-left: auto;
+      }
+
+      .message.received {
+        background: #e9ecef;
+        color: #212529;
+      }
+
+      .message.system {
+        background: #fff3cd;
+        color: #856404;
+        text-align: center;
+        max-width: 100%;
+        font-size: 0.9em;
+      }
+
+      .message.error {
+        background: #f8d7da;
+        color: #721c24;
+        border-left: 4px solid #dc3545;
+      }
+
+      .message.success {
+        background: #d4edda;
+        color: #155724;
+        border-left: 4px solid #28a745;
+      }
+
+      .message-meta {
+        font-size: 0.8em;
+        opacity: 0.7;
+        margin-top: 5px;
+      }
+
+      .typing-indicator {
+        padding: 10px 20px;
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        font-style: italic;
+        color: #6c757d;
+        min-height: 40px;
+      }
+
+      .events-log {
+        background: #212529;
+        color: #00ff00;
+        padding: 20px;
+        font-family: "Courier New", monospace;
+        font-size: 0.85em;
+        max-height: 300px;
+        overflow-y: auto;
+        border-radius: 8px;
+        margin-top: 10px;
+      }
+
+      .event-entry {
+        margin-bottom: 5px;
+        padding: 5px;
+        border-left: 3px solid #00ff00;
+        padding-left: 10px;
+      }
+
+      .event-entry.error {
+        border-left-color: #ff0000;
+        color: #ff6b6b;
+      }
+
+      .event-entry.warning {
+        border-left-color: #ffc107;
+        color: #ffd43b;
+      }
+
+      .event-entry.info {
+        border-left-color: #17a2b8;
+        color: #74c0fc;
+      }
+
+      .timestamp {
+        color: #adb5bd;
+        font-size: 0.9em;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        font-weight: 600;
+        margin-left: 8px;
+      }
+
+      .badge-success {
+        background: #28a745;
+        color: white;
+      }
+
+      .badge-danger {
+        background: #dc3545;
+        color: white;
+      }
+
+      .badge-warning {
+        background: #ffc107;
+        color: #212529;
+      }
+
+      .badge-info {
+        background: #17a2b8;
+        color: white;
+      }
+
+      .quick-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .stat-card {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        text-align: center;
+      }
+
+      .stat-value {
+        font-size: 2em;
+        font-weight: bold;
+        color: #667eea;
+      }
+
+      .stat-label {
+        color: #6c757d;
+        font-size: 0.9em;
+        margin-top: 5px;
+      }
+
+      .accordion {
+        margin-top: 10px;
+      }
+
+      .accordion-item {
+        margin-bottom: 10px;
+      }
+
+      .accordion-header {
+        background: #e9ecef;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.3s;
+      }
+
+      .accordion-header:hover {
+        background: #dee2e6;
+      }
+
+      .accordion-content {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 0 0 8px 8px;
+        margin-top: 2px;
+        display: none;
+      }
+
+      .accordion-content.active {
+        display: block;
+      }
+
+      @media (max-width: 768px) {
+        .main-content {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          border-right: none;
+          border-bottom: 2px solid #e9ecef;
+        }
+
+        .quick-actions {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .code-block {
+        background: #2d2d2d;
+        color: #f8f8f2;
+        padding: 15px;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-family: "Courier New", monospace;
+        font-size: 0.85em;
+        margin-top: 10px;
+      }
+
+      .help-text {
+        font-size: 0.85em;
+        color: #6c757d;
+        margin-top: 5px;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🔌 Socket.IO Room Request Tester</h1>
+        <p>Real-time messaging test interface for room request conversations</p>
+      </div>
+
+      <div class="status-bar">
+        <div class="status-indicator">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="statusText">Disconnected</span>
+        </div>
+        <div>
+          <span>Socket ID: <strong id="socketId">-</strong></span>
+        </div>
+        <div>
+          <span>User: <strong id="currentUser">Not logged in</strong></span>
+        </div>
+        <div>
+          <span>Room: <strong id="currentRoom">None</strong></span>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <div class="sidebar">
+          <!-- Connection Section -->
+          <div class="section">
+            <h3>🔐 Connection</h3>
+            <div class="form-group">
+              <label>Server URL</label>
+              <input
+                type="text"
+                id="serverUrl"
+                value="http://localhost:8081"
+                placeholder="http://localhost:8081"
+              />
+            </div>
+            <div class="form-group">
+              <label>JWT Token</label>
+              <textarea
+                id="jwtToken"
+                placeholder="Paste your JWT token here..."
+              ></textarea>
+              <div class="help-text">Get token from login API endpoint</div>
+            </div>
+            <button
+              class="btn-primary"
+              id="connectBtn"
+              onclick="connectSocket()"
+            >
+              Connect
+            </button>
+            <button
+              class="btn-danger"
+              id="disconnectBtn"
+              onclick="disconnectSocket()"
+              disabled
+            >
+              Disconnect
+            </button>
+          </div>
+
+          <!-- Room Actions Section -->
+          <div class="section">
+            <h3>🏠 Room Actions</h3>
+            <div class="form-group">
+              <label>Room Request ID</label>
+              <input type="number" id="roomRequestId" value="1" min="1" />
+            </div>
+            <button
+              class="btn-success"
+              id="joinBtn"
+              onclick="joinRoom()"
+              disabled
+            >
+              Join Room
+            </button>
+            <button
+              class="btn-danger"
+              id="leaveBtn"
+              onclick="leaveRoom()"
+              disabled
+            >
+              Leave Room
+            </button>
+          </div>
+
+          <!-- Message Section -->
+          <div class="section">
+            <h3>💬 Send Message</h3>
+            <div class="form-group">
+              <textarea
+                id="messageInput"
+                placeholder="Type your message..."
+              ></textarea>
+            </div>
+            <button
+              class="btn-primary"
+              id="sendBtn"
+              onclick="sendMessage()"
+              disabled
+            >
+              Send Message
+            </button>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="section">
+            <h3>⚡ Quick Actions</h3>
+            <div class="quick-actions">
+              <button
+                class="btn-warning"
+                onclick="startTyping()"
+                disabled
+                id="typingBtn"
+              >
+                Start Typing
+              </button>
+              <button
+                class="btn-secondary"
+                onclick="stopTyping()"
+                disabled
+                id="stopTypingBtn"
+              >
+                Stop Typing
+              </button>
+              <button
+                class="btn-info"
+                onclick="markAsRead()"
+                disabled
+                id="markReadBtn"
+              >
+                Mark as Read
+              </button>
+              <button class="btn-secondary" onclick="clearMessages()">
+                Clear Messages
+              </button>
+            </div>
+          </div>
+
+          <!-- Statistics -->
+          <div class="section">
+            <h3>📊 Statistics</h3>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-value" id="msgSent">0</div>
+                <div class="stat-label">Sent</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="msgReceived">0</div>
+                <div class="stat-label">Received</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="eventsCount">0</div>
+                <div class="stat-label">Events</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="errorsCount">0</div>
+                <div class="stat-label">Errors</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Test Scenarios -->
+          <div class="section">
+            <h3>🧪 Test Scenarios</h3>
+            <button class="btn-info" onclick="runFullFlow()">
+              Run Full Flow Test
+            </button>
+            <button class="btn-warning" onclick="testErrorHandling()">
+              Test Error Handling
+            </button>
+          </div>
+        </div>
+
+        <div class="chat-area">
+          <div class="chat-header">
+            <h2>Messages & Events</h2>
+            <p>Real-time conversation and event log</p>
+          </div>
+
+          <div class="messages-container" id="messagesContainer">
+            <div class="message system">
+              👋 Welcome! Connect to the server and join a room to start
+              testing.
+            </div>
+          </div>
+
+          <div class="typing-indicator" id="typingIndicator"></div>
+
+          <div
+            style="
+              padding: 20px 30px;
+              background: #f8f9fa;
+              border-top: 2px solid #e9ecef;
+            "
+          >
+            <h4 style="margin-bottom: 10px; color: #495057">📡 Event Log</h4>
+            <div class="events-log" id="eventsLog">
+              <div class="event-entry info">
+                <span class="timestamp">[System]</span> Event log initialized.
+                Waiting for connection...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let socket = null;
+      let stats = {
+        sent: 0,
+        received: 0,
+        events: 0,
+        errors: 0,
+      };
+
+      // Update stats display
+      function updateStats() {
+        document.getElementById("msgSent").textContent = stats.sent;
+        document.getElementById("msgReceived").textContent = stats.received;
+        document.getElementById("eventsCount").textContent = stats.events;
+        document.getElementById("errorsCount").textContent = stats.errors;
+      }
+
+      // Add message to chat
+      function addMessage(content, type = "system") {
+        const container = document.getElementById("messagesContainer");
+        const message = document.createElement("div");
+        message.className = `message ${type}`;
+
+        if (typeof content === "object") {
+          message.innerHTML = `
+                    <div><strong>${content.sender || "System"}:</strong> ${
+            content.message || JSON.stringify(content)
+          }</div>
+                    <div class="message-meta">${new Date(
+                      content.createdAt || new Date()
+                    ).toLocaleTimeString()}</div>
+                `;
+        } else {
+          message.textContent = content;
+        }
+
+        container.appendChild(message);
+        container.scrollTop = container.scrollHeight;
+      }
+
+      // Add event to log
+      function logEvent(message, type = "info") {
+        const log = document.getElementById("eventsLog");
+        const entry = document.createElement("div");
+        entry.className = `event-entry ${type}`;
+        const timestamp = new Date().toLocaleTimeString();
+        entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+        log.appendChild(entry);
+        log.scrollTop = log.scrollHeight;
+        stats.events++;
+        updateStats();
+      }
+
+      // Connect to Socket.IO
+      function connectSocket() {
+        const serverUrl = document.getElementById("serverUrl").value;
+        const token = document.getElementById("jwtToken").value.trim();
+
+        if (!token) {
+          alert("Please enter a JWT token");
+          return;
+        }
+
+        logEvent("🔄 Connecting to " + serverUrl + "...", "info");
+        addMessage("Connecting to server...", "system");
+
+        socket = io(serverUrl, {
+          auth: {
+            token: token,
+          },
+          transports: ["websocket", "polling"],
+        });
+
+        // Connection events
+        socket.on("connect", () => {
+          logEvent(
+            "✅ Connected successfully! Socket ID: " + socket.id,
+            "info"
+          );
+          addMessage("✅ Connected to server", "success");
+
+          document.getElementById("statusDot").classList.add("connected");
+          document.getElementById("statusText").textContent = "Connected";
+          document.getElementById("socketId").textContent = socket.id;
+
+          document.getElementById("connectBtn").disabled = true;
+          document.getElementById("disconnectBtn").disabled = false;
+          document.getElementById("joinBtn").disabled = false;
+
+          updateButtonStates();
+        });
+
+        socket.on("connect_error", (error) => {
+          logEvent("❌ Connection error: " + error.message, "error");
+          addMessage("❌ Connection failed: " + error.message, "error");
+          stats.errors++;
+          updateStats();
+        });
+
+        socket.on("disconnect", (reason) => {
+          logEvent("🔌 Disconnected: " + reason, "warning");
+          addMessage("Disconnected from server: " + reason, "system");
+
+          document.getElementById("statusDot").classList.remove("connected");
+          document.getElementById("statusText").textContent = "Disconnected";
+          document.getElementById("socketId").textContent = "-";
+          document.getElementById("currentRoom").textContent = "None";
+
+          updateButtonStates(true);
+        });
+
+        // Message events
+        socket.on("message_received", (data) => {
+          logEvent(
+            `📩 Message received from ${data.senderDetails.username}`,
+            "info"
+          );
+          addMessage(
+            {
+              sender: `${data.senderDetails.fullName} (${data.sender})`,
+              message: data.message,
+              createdAt: data.createdAt,
+            },
+            data.sender === "user" ? "sent" : "received"
+          );
+          stats.received++;
+          updateStats();
+        });
+
+        socket.on("messages_marked_read", (data) => {
+          logEvent(
+            `✔️ Messages marked as read: ${data.messageIds.length} messages`,
+            "info"
+          );
+          addMessage(
+            `✔️ ${data.messageIds.length} messages marked as read`,
+            "success"
+          );
+        });
+
+        // Typing events
+        socket.on("user_typing", (data) => {
+          logEvent(`✍️ ${data.username} is typing...`, "info");
+          document.getElementById(
+            "typingIndicator"
+          ).textContent = `${data.username} is typing...`;
+        });
+
+        socket.on("user_stop_typing", (data) => {
+          logEvent(`⏸️ ${data.username} stopped typing`, "info");
+          document.getElementById("typingIndicator").textContent = "";
+        });
+
+        // Error events
+        socket.on("room_request_error", (data) => {
+          logEvent(`❌ Error [${data.code}]: ${data.message}`, "error");
+          addMessage(`❌ Error: ${data.message}`, "error");
+          stats.errors++;
+          updateStats();
+        });
+
+        socket.on("error", (error) => {
+          logEvent(`❌ Socket error: ${error}`, "error");
+          addMessage(`❌ Error: ${error}`, "error");
+          stats.errors++;
+          updateStats();
+        });
+      }
+
+      function disconnectSocket() {
+        if (socket) {
+          socket.disconnect();
+          socket = null;
+          addMessage("Manually disconnected", "system");
+        }
+      }
+
+      function joinRoom() {
+        const roomId = parseInt(document.getElementById("roomRequestId").value);
+
+        if (!socket || !socket.connected) {
+          alert("Not connected to server");
+          return;
+        }
+
+        logEvent(`🚪 Joining room ${roomId}...`, "info");
+        addMessage(`Joining room ${roomId}...`, "system");
+
+        socket.emit("join_room_request", { roomRequestId: roomId });
+
+        document.getElementById("currentRoom").textContent = roomId;
+        document.getElementById("leaveBtn").disabled = false;
+        document.getElementById("sendBtn").disabled = false;
+        document.getElementById("typingBtn").disabled = false;
+        document.getElementById("stopTypingBtn").disabled = false;
+        document.getElementById("markReadBtn").disabled = false;
+      }
+
+      function leaveRoom() {
+        const roomId = parseInt(document.getElementById("roomRequestId").value);
+
+        if (!socket || !socket.connected) {
+          alert("Not connected to server");
+          return;
+        }
+
+        logEvent(`🚪 Leaving room ${roomId}...`, "warning");
+        addMessage(`Leaving room ${roomId}...`, "system");
+
+        socket.emit("leave_room_request", { roomRequestId: roomId });
+
+        document.getElementById("currentRoom").textContent = "None";
+        document.getElementById("leaveBtn").disabled = true;
+        document.getElementById("sendBtn").disabled = true;
+        document.getElementById("typingBtn").disabled = true;
+        document.getElementById("stopTypingBtn").disabled = true;
+        document.getElementById("markReadBtn").disabled = true;
+      }
+
+      function sendMessage() {
+        const message = document.getElementById("messageInput").value.trim();
+        const roomId = parseInt(document.getElementById("roomRequestId").value);
+
+        if (!message) {
+          alert("Please enter a message");
+          return;
+        }
+
+        if (!socket || !socket.connected) {
+          alert("Not connected to server");
+          return;
+        }
+
+        logEvent(`📤 Sending message to room ${roomId}`, "info");
+
+        socket.emit("send_message", {
+          roomRequestId: roomId,
+          message: message,
+        });
+
+        document.getElementById("messageInput").value = "";
+        stats.sent++;
+        updateStats();
+      }
+
+      function startTyping() {
+        const roomId = parseInt(document.getElementById("roomRequestId").value);
+
+        if (!socket || !socket.connected) {
+          alert("Not connected to server");
+          return;
+        }
+
+        logEvent(`✍️ Sending typing indicator...`, "info");
+        socket.emit("typing", { roomRequestId: roomId });
+      }
+
+      function stopTyping() {
+        const roomId = parseInt(document.getElementById("roomRequestId").value);
+
+        if (!socket || !socket.connected) {
+          alert("Not connected to server");
+          return;
+        }
+
+        logEvent(`⏸️ Sending stop typing indicator...`, "info");
+        socket.emit("stop_typing", { roomRequestId: roomId });
+      }
+
+      function markAsRead() {
+        const roomId = parseInt(document.getElementById("roomRequestId").value);
+
+        if (!socket || !socket.connected) {
+          alert("Not connected to server");
+          return;
+        }
+
+        logEvent(`✔️ Marking messages as read in room ${roomId}...`, "info");
+        socket.emit("mark_as_read", { roomRequestId: roomId });
+      }
+
+      function clearMessages() {
+        document.getElementById("messagesContainer").innerHTML = "";
+        addMessage("Messages cleared", "system");
+      }
+
+      function updateButtonStates(disconnected = false) {
+        if (disconnected) {
+          document.getElementById("connectBtn").disabled = false;
+          document.getElementById("disconnectBtn").disabled = true;
+          document.getElementById("joinBtn").disabled = true;
+          document.getElementById("leaveBtn").disabled = true;
+          document.getElementById("sendBtn").disabled = true;
+          document.getElementById("typingBtn").disabled = true;
+          document.getElementById("stopTypingBtn").disabled = true;
+          document.getElementById("markReadBtn").disabled = true;
+        }
+      }
+
+      // Test scenarios
+      async function runFullFlow() {
+        if (!socket || !socket.connected) {
+          alert("Please connect first");
+          return;
+        }
+
+        addMessage("🧪 Running full flow test...", "system");
+
+        // 1. Join room
+        setTimeout(() => {
+          joinRoom();
+        }, 500);
+
+        // 2. Start typing
+        setTimeout(() => {
+          startTyping();
+        }, 1500);
+
+        // 3. Stop typing
+        setTimeout(() => {
+          stopTyping();
+        }, 3000);
+
+        // 4. Send message
+        setTimeout(() => {
+          document.getElementById("messageInput").value =
+            "This is a test message from the full flow test!";
+          sendMessage();
+        }, 4000);
+
+        // 5. Mark as read
+        setTimeout(() => {
+          markAsRead();
+        }, 5500);
+
+        setTimeout(() => {
+          addMessage("✅ Full flow test completed!", "success");
+        }, 6000);
+      }
+
+      function testErrorHandling() {
+        if (!socket || !socket.connected) {
+          alert("Please connect first");
+          return;
+        }
+
+        addMessage("🧪 Testing error handling...", "system");
+
+        // Test 1: Empty message
+        setTimeout(() => {
+          logEvent("Test 1: Sending empty message", "warning");
+          socket.emit("send_message", {
+            roomRequestId: parseInt(
+              document.getElementById("roomRequestId").value
+            ),
+            message: "",
+          });
+        }, 500);
+
+        // Test 2: Invalid room
+        setTimeout(() => {
+          logEvent("Test 2: Trying to join invalid room", "warning");
+          socket.emit("join_room_request", { roomRequestId: 999999 });
+        }, 2000);
+
+        setTimeout(() => {
+          addMessage("✅ Error handling tests completed!", "success");
+        }, 3500);
+      }
+
+      // Keyboard shortcuts
+      document
+        .getElementById("messageInput")
+        .addEventListener("keypress", (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
+
+      // Auto-scroll chat
+      const messagesContainer = document.getElementById("messagesContainer");
+      messagesContainer.addEventListener("DOMNodeInserted", () => {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      });
+
+      // Initialize
+      logEvent("🎉 Socket.IO Tester ready! Please connect to start.", "info");
+    </script>
+  </body>
+</html>
