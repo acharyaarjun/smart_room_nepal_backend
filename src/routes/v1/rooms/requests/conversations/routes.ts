@@ -1,12 +1,16 @@
 import { Router } from "express";
 import { authMiddleware } from "@/middlewares";
 import {
-  getRoomRequestConversations,
+  get,
   getUnreadCount,
   getUnreadSummary,
-} from "@/controllers/v1/rooms/requests/conversations/get.controller";
-import { param } from "express-validator";
+} from "@/controllers/v1/rooms/requests/conversations";
 import validate from "@/validators/validate";
+import {
+  getConversationsValidator,
+  getUnreadCountValidator,
+  getUnreadSummaryValidator,
+} from "@/validators/v1/rooms/requests/conversations";
 
 const router: Router = Router({ mergeParams: true });
 
@@ -15,15 +19,7 @@ const router: Router = Router({ mergeParams: true });
  * @description Get conversation history for a room request
  * @access Private (User and Room Owner only)
  */
-router.get(
-  "/",
-  authMiddleware,
-  param("roomRequestId")
-    .isInt()
-    .withMessage("Room request ID must be an integer"),
-  validate,
-  getRoomRequestConversations
-);
+router.get("/", authMiddleware, getConversationsValidator(), validate, get);
 
 /**
  * @route GET /api/v1/rooms/requests/:roomRequestId/conversations/unread-count
@@ -33,9 +29,7 @@ router.get(
 router.get(
   "/unread-count",
   authMiddleware,
-  param("roomRequestId")
-    .isInt()
-    .withMessage("Room request ID must be an integer"),
+  getUnreadCountValidator(),
   validate,
   getUnreadCount
 );
@@ -45,6 +39,12 @@ router.get(
  * @description Get all room requests with unread message counts for current user
  * @access Private
  */
-router.get("/summary", authMiddleware, getUnreadSummary);
+router.get(
+  "/summary",
+  authMiddleware,
+  getUnreadSummaryValidator(),
+  validate,
+  getUnreadSummary
+);
 
 export default router;
