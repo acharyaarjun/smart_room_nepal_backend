@@ -7,11 +7,12 @@ import {
   DataType,
   DeletedAt,
   ForeignKey,
+  HasOne,
   Model,
   Table,
   UpdatedAt,
 } from "sequelize-typescript";
-import { User, Room } from "@/models";
+import { User, Room, RoomReview } from "@/models";
 
 /**
  * @interface IRoomRequest
@@ -121,6 +122,9 @@ class RoomRequest extends Model<IRoomRequest, Optional<IRoomRequest, "id">> {
 
   @BelongsTo(() => Room)
   room!: Room;
+
+  @HasOne(() => RoomReview)
+  review!: RoomReview;
 }
 
 export default RoomRequest;

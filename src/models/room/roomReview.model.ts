@@ -36,6 +36,13 @@ interface IRoomReview {
   timestamps: true,
   paranoid: true,
   underscored: true,
+  indexes: [
+    {
+      unique: true,
+      fields: ["room_request_id"],
+      name: "unique_room_request_review",
+    },
+  ],
 })
 class RoomReview extends Model<IRoomReview, Optional<IRoomReview, "id">> {
   @Column({ autoIncrement: true, primaryKey: true, type: DataType.BIGINT })
@@ -46,6 +53,7 @@ class RoomReview extends Model<IRoomReview, Optional<IRoomReview, "id">> {
     type: DataType.BIGINT,
     allowNull: false,
     onDelete: "CASCADE",
+    unique: true,
   })
   roomRequestId!: number;
   @Column({
