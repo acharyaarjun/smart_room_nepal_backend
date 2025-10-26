@@ -45,4 +45,8 @@ export default cleanEnv(process.env, {
 
   EXPRESS_SESSION_SECRET: str(),
   COOKIE_SECRET: str(),
+
+  // Khalti Payment Gateway configuration
+  KHALTI_PUBLIC_KEY: str(),
+  KHALTI_SECRET_KEY: str(),
 });
