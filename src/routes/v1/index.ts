@@ -5,6 +5,7 @@ import DistrictRoute from "./district/routes";
 import MembershipTypeRoute from "./membershipTypes/routes";
 import MembershipRoute from "./membership/routes";
 import RoomRoute from "./rooms/routes";
+import UserRoute from "./users/routes";
 
 const router: Router = Router();
 
@@ -14,5 +15,6 @@ router.use("/districts", DistrictRoute);
 router.use("/membership-types", MembershipTypeRoute);
 router.use("/membership", MembershipRoute);
 router.use("/rooms", RoomRoute);
+router.use("/users", UserRoute);
 
 export default router;
