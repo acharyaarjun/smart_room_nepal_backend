@@ -4,11 +4,13 @@ import {
   verifyKhaltiPayment,
   getMyPayments,
   getActiveMembership,
+  getByAdmin,
 } from "@/controllers/v1/payments";
 import { authMiddleware, checkRoleMiddleware } from "@/middlewares";
 import {
   createMembershipValidator,
   getMyPaymentsValidator,
+  getByAdminValidator,
 } from "@/validators/v1/membership";
 import validate from "@/validators/validate";
 import { Role } from "@/enums";
@@ -55,5 +57,19 @@ router.get(
  * @access Private
  */
 router.get("/active", authMiddleware, getActiveMembership);
+
+/**
+ * @route GET /api/v1/membership/admin/payments
+ * @description Get all payments (admin only) with filters
+ * @access Private (Admin only)
+ */
+router.get(
+  "/admin/payments",
+  authMiddleware,
+  checkRoleMiddleware([Role.ADMIN]),
+  getByAdminValidator(),
+  validate,
+  getByAdmin
+);
 
 export default router;
