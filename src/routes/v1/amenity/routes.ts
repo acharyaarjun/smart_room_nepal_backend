@@ -36,14 +36,7 @@ router.post(
  * @description Get all amenities
  * @access Public
  */
-router.get(
-  "/",
-  authMiddleware,
-  checkRoleMiddleware([Role.ADMIN, Role.HOST]),
-  getByAdminValidator(),
-  validate,
-  getByAdmin
-);
+router.get("/", getByAdminValidator(), validate, getByAdmin);
 
 /**
  * @route DELETE /api/v1/amenities/:id

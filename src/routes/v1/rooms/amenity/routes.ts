@@ -31,7 +31,7 @@ router.post(
  * @description Get all amenities for a specific room
  * @access Public
  */
-router.get("/:slug", authMiddleware, getValidator(), validate, get);
+router.get("/:slug", getValidator(), validate, get);
 
 /**
  * @route DELETE /api/v1/room/amenities/:id
