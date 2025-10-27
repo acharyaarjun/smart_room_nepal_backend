@@ -1,5 +1,5 @@
 import { RoomStatus } from "@/enums";
-import { Amenity, District, Media, Room } from "@/models";
+import { Amenity, District, Media, Room, RoomAmenity } from "@/models";
 import ApiResponse from "@/utils/apiResponse";
 import {
   decodeGetQuery,
@@ -7,19 +7,24 @@ import {
   getPagingData,
 } from "@/utils/paginationUtil";
 import { Request, Response } from "express";
-import { FindAndCountOptions, Op, Order, where } from "sequelize";
+import { FindAndCountOptions, Op, Order } from "sequelize";
 
 const get = async (req: Request, res: Response) => {
   const { page, size, search, sortBy, orderBy } = decodeGetQuery(req.query);
   const { limit, offset } = getPagination({ page, size });
   const { isFeatured, minPrice, maxPrice, roomType, maxCapacity } = req.query;
-  const district = req.district;
+  const districts = req.districts;
+  const amenityIds = req.amenityIds;
 
   const whereCondition: any = {};
 
   whereCondition.roomStatus = RoomStatus.APPROVED;
-  if (district) {
-    whereCondition.districtId = district.id;
+
+  // Filter by multiple districts
+  if (districts && districts.length > 0) {
+    whereCondition.districtId = {
+      [Op.in]: districts.map((d: any) => d.id),
+    };
   }
 
   if (isFeatured !== undefined) {
@@ -59,6 +64,7 @@ const get = async (req: Request, res: Response) => {
       },
     ];
   }
+
   const query: FindAndCountOptions = {
     attributes: [
       "id",
@@ -87,8 +93,20 @@ const get = async (req: Request, res: Response) => {
         model: Amenity,
         attributes: ["id", "name", "icon"],
         through: { attributes: [] },
+        // Filter by amenities if provided
+        ...(amenityIds && amenityIds.length > 0
+          ? {
+              where: {
+                id: {
+                  [Op.in]: amenityIds,
+                },
+              },
+              required: true, // INNER JOIN to ensure room has these amenities
+            }
+          : {}),
       },
     ],
+    distinct: true,
   };
 
   const orderCondition = [[sortBy, orderBy]];

@@ -1,5 +1,5 @@
 import { MaxCapacity, RoomType } from "@/enums";
-import { District, Room } from "@/models";
+import { Amenity, District, Room } from "@/models";
 import { query, ValidationChain } from "express-validator";
 
 const getValidator = (): ValidationChain[] => {
@@ -94,22 +94,64 @@ const getValidator = (): ValidationChain[] => {
           ", "
         )}`
       ),
-    query("district")
+    query("districts")
       .optional()
       .isString()
-      .withMessage("District slug must be a string")
+      .withMessage("Districts must be a string")
       .bail()
-      .isLength({ max: 100 })
-      .withMessage("District slug must be less than 100 characters")
-      .bail()
-      .customSanitizer((value) => value.trim().toLowerCase())
-      .custom(async (value, { req }) => {
-        // Check if district exists
-        const district = await District.findOne({ where: { slug: value } });
-        if (!district) {
-          throw new Error("District not found");
+      .customSanitizer((value) => {
+        // Split by comma and trim each value
+        return value
+          .split(",")
+          .map((d: string) => d.trim().toLowerCase())
+          .filter((d: string) => d.length > 0);
+      })
+      .custom(async (value: string[], { req }) => {
+        if (!value || value.length === 0) {
+          return true;
         }
-        req.district = district;
+
+        // Check if all districts exist
+        const districts = await District.findAll({
+          where: { slug: value },
+        });
+
+        if (districts.length === 0) {
+          throw new Error("No valid districts found");
+        }
+
+        // Store found districts in request for controller use
+        req.districts = districts;
+        return true;
+      }),
+    query("amenities")
+      .optional()
+      .isString()
+      .withMessage("Amenities must be a string")
+      .bail()
+      .customSanitizer((value) => {
+        // Split by comma, trim, and convert to numbers
+        return value
+          .split(",")
+          .map((id: string) => parseInt(id.trim()))
+          .filter((id: number) => !isNaN(id) && id > 0);
+      })
+      .custom(async (value: number[], { req }) => {
+        if (!value || value.length === 0) {
+          return true;
+        }
+
+        // Check if all amenities exist
+        const amenities = await Amenity.findAll({
+          where: { id: value },
+        });
+
+        if (amenities.length === 0) {
+          throw new Error("No valid amenities found");
+        }
+
+        // Store found amenity IDs in request for controller use
+        req.amenityIds = amenities.map((a) => a.id);
         return true;
       }),
     query("maxCapacity")
