@@ -3,3 +3,4 @@ export { default as verifyKhaltiPayment } from "./verifyKhaltiPayment.controller
 export { default as getMyPayments } from "./getMyPayments.controller";
 export { default as getActiveMembership } from "./getActiveMembership.controller";
 export { default as getByAdmin } from "./getByAdmin.controller";
+export { default as updateStatusByAdmin } from "./updateStatusByAdmin.controller";

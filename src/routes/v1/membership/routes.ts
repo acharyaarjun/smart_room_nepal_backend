@@ -5,12 +5,14 @@ import {
   getMyPayments,
   getActiveMembership,
   getByAdmin,
+  updateStatusByAdmin,
 } from "@/controllers/v1/payments";
 import { authMiddleware, checkRoleMiddleware } from "@/middlewares";
 import {
   createMembershipValidator,
   getMyPaymentsValidator,
   getByAdminValidator,
+  updateStatusByAdminValidator,
 } from "@/validators/v1/membership";
 import validate from "@/validators/validate";
 import { Role } from "@/enums";
@@ -70,6 +72,20 @@ router.get(
   getByAdminValidator(),
   validate,
   getByAdmin
+);
+
+/**
+ * @route PUT /api/v1/membership/admin/payments/:paymentId
+ * @description Update payment status (admin only)
+ * @access Private (Admin only)
+ */
+router.put(
+  "/admin/payments/:paymentId",
+  authMiddleware,
+  checkRoleMiddleware([Role.ADMIN]),
+  updateStatusByAdminValidator(),
+  validate,
+  updateStatusByAdmin
 );
 
 export default router;
