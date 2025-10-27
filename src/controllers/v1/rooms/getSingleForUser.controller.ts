@@ -10,6 +10,7 @@ import {
   RoomRequest,
   User,
   UserProfile,
+  Wishlist,
 } from "@/models";
 import ApiResponse from "@/utils/apiResponse";
 import { Request, Response } from "express";
@@ -97,6 +98,19 @@ const getSingleForUser = async (req: Request, res: Response) => {
     (fetchedRoom as any).dataValues.isAvailable = false;
   } else {
     (fetchedRoom as any).dataValues.isAvailable = true;
+  }
+
+  // Check if room is wishlisted by the user
+  if (user) {
+    const wishlist = await Wishlist.findOne({
+      where: {
+        userId: user.id,
+        roomId: room.id,
+      },
+    });
+    (fetchedRoom as any).dataValues.isWishlisted = !!wishlist;
+  } else {
+    (fetchedRoom as any).dataValues.isWishlisted = false;
   }
 
   // Track recently viewed - only if user is authenticated

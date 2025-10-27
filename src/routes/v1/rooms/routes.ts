@@ -89,10 +89,10 @@ router.get(
 
 /**
  * @route GET /api/v1/rooms
- * @description Get all public rooms
- * @access Public
+ * @description Get all public rooms (with wishlist flag if authenticated)
+ * @access Public (optional auth)
  */
-router.get("/", getValidator(), validate, get);
+router.get("/", optionalAuthMiddleware, getValidator(), validate, get);
 
 /**
  * @route PUT /api/v1/rooms/:slug

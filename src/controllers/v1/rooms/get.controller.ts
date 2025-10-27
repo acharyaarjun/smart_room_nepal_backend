@@ -1,5 +1,5 @@
 import { RoomStatus } from "@/enums";
-import { Amenity, District, Media, Room, RoomAmenity } from "@/models";
+import { Amenity, District, Media, Room, Wishlist } from "@/models";
 import ApiResponse from "@/utils/apiResponse";
 import {
   decodeGetQuery,
@@ -117,8 +117,51 @@ const get = async (req: Request, res: Response) => {
 
   const paginatedData = await Room.findAndCountAll(query);
 
+  // Add wishlist flag if user is authenticated
+  let roomsWithWishlistFlag: any[] = paginatedData.rows;
+
+  if (req.user) {
+    const userId = req.user.id;
+    const roomIds = paginatedData.rows.map((room) => room.id);
+
+    // Get all wishlist entries for this user and these rooms
+    const wishlists = await Wishlist.findAll({
+      where: {
+        userId,
+        roomId: {
+          [Op.in]: roomIds,
+        },
+      },
+      attributes: ["roomId"],
+    });
+
+    // Create a Set of wishlisted room IDs for quick lookup
+    const wishlistedRoomIds = new Set(wishlists.map((w) => w.roomId));
+
+    // Add isWishlisted flag to each room
+    roomsWithWishlistFlag = paginatedData.rows.map((room) => {
+      const roomData = room.toJSON();
+      return {
+        ...roomData,
+        isWishlisted: wishlistedRoomIds.has(room.id),
+      };
+    });
+  } else {
+    // If no user, set isWishlisted to false for all rooms
+    roomsWithWishlistFlag = paginatedData.rows.map((room) => {
+      const roomData = room.toJSON();
+      return {
+        ...roomData,
+        isWishlisted: false,
+      };
+    });
+  }
+
   const response = getPagingData({
-    paginatedData,
+    paginatedData: {
+      rows: roomsWithWishlistFlag,
+      count: paginatedData.count,
+    },
     page,
     limit,
   });
