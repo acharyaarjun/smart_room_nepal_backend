@@ -97,7 +97,8 @@ const login = async (
     return next(
       new ApiError({
         status: 403,
-        message: "User is disabled",
+        message:
+          "Your account is currently disabled. Please wait for admin approval. If you believe this is a mistake, contact support.",
         errors: [
           {
             isEnabled: "User is disabled",

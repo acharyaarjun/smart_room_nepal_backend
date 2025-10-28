@@ -14,7 +14,13 @@ const get = async (req: Request, res: Response) => {
   const { roomRequestStatus } = req.query;
   const room = req.room;
 
+  const user = req.user;
+
   const whereCondition: any = {};
+
+  if (user) {
+    whereCondition.userId = user.id;
+  }
 
   if (room) {
     whereCondition.roomId = room.id;

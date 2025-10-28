@@ -78,7 +78,7 @@ const register = async (req: Request, res: Response): Promise<void> => {
     username,
     password,
     isEmailVerified: true,
-    isEnabled: true,
+    isEnabled: false,
     role: role || Role.USER,
   });
 
@@ -99,7 +99,7 @@ const register = async (req: Request, res: Response): Promise<void> => {
     occupationStatus,
     maritalStatus,
     documentId: file ? media?.id : undefined,
-    status: user.role === Role.HOST ? UserStatus.PENDING : UserStatus.ACTIVE,
+    status: user.role === Role.HOST ? UserStatus.PENDING : UserStatus.PENDING,
   });
 
   // generate otp

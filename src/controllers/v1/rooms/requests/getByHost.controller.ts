@@ -58,13 +58,10 @@ const getByHost = async (req: Request, res: Response) => {
       {
         model: Room,
         attributes: ["id", "name", "slug", "price", "unit", "offerPrice"],
-        include: [
-          {
-            model: User,
-            where: { id: req.user.id },
-            attributes: [],
-          },
-        ],
+        where: {
+          userId: req.user.id,
+        },
+        required: true,
       },
     ],
   };

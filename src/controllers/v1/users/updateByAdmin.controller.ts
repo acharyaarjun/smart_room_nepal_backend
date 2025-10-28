@@ -56,6 +56,10 @@ const updateByAdmin = async (req: Request, res: Response) => {
 
   // Admin can update ALL UserProfile fields
   const profileUpdateData: any = {};
+  if (status !== undefined && status === UserStatus.ACTIVE) {
+    profileUpdateData.isPhoneVerified = true;
+    userUpdateData.isEmailVerified = true;
+  }
   if (phone !== undefined) profileUpdateData.phone = phone;
   if (gender !== undefined) profileUpdateData.gender = gender;
   if (dob !== undefined) profileUpdateData.dob = dob;
