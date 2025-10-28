@@ -2,10 +2,11 @@ import {
   loginValidator,
   logoutValidator,
   registerValidator,
+  changePasswordValidator,
 } from "@/validators/v1/auth";
 import { Router } from "express";
 import validate from "@/validators/validate";
-import { login, logout, register } from "@/controllers/v1/auth";
+import { login, logout, register, changePassword } from "@/controllers/v1/auth";
 import { authMiddleware } from "@/middlewares";
 import { uploadImageFileMiddleware } from "@/middlewares/multer.middleware";
 import { FileStorageDirectory } from "@/enums";
@@ -39,5 +40,18 @@ router.post(
  * @access Private
  */
 router.post("/logout", authMiddleware, logoutValidator(), validate, logout);
+
+/**
+ * @route PUT /api/v1/auth/change-password
+ * @description Change password for authenticated user
+ * @access Private
+ */
+router.put(
+  "/change-password",
+  authMiddleware,
+  changePasswordValidator(),
+  validate,
+  changePassword
+);
 
 export default router;

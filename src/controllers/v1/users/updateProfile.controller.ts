@@ -1,8 +1,15 @@
-import { Media, User, UserProfile } from "@/models";
+import {
+  Media,
+  User,
+  UserProfile,
+  Payment,
+  MembershipType,
+  Room,
+} from "@/models";
 import ApiError from "@/utils/apiError";
 import ApiResponse from "@/utils/apiResponse";
 import { Request, Response } from "express";
-import { FileStorageDirectory } from "@/enums";
+import { FileStorageDirectory, Role, PaymentStatus } from "@/enums";
 import { createMedia } from "@/controllers/v1/media";
 import { removeLocalFileFromPath } from "@/helpers";
 
@@ -133,15 +140,13 @@ const updateProfile = async (req: Request, res: Response) => {
   const updatedUser = await User.findByPk(user.id, {
     attributes: [
       "id",
+      "role",
       "username",
       "email",
       "fullName",
-      "role",
       "isEmailVerified",
       "isEnabled",
       "loginMethod",
-      "createdAt",
-      "updatedAt",
     ],
     include: [
       {
@@ -149,35 +154,80 @@ const updateProfile = async (req: Request, res: Response) => {
         attributes: [
           "id",
           "phone",
-          "isPhoneVerified",
           "gender",
           "dob",
           "occupationStatus",
           "maritalStatus",
-          "status",
-          "createdAt",
-          "updatedAt",
         ],
         include: [
           {
             model: Media,
             as: "avatar",
-            attributes: ["id", "fileName", "path", "mimeType", "url"],
+            attributes: ["fileName", "path", "mimeType", "url"],
           },
           {
             model: Media,
             as: "document",
-            attributes: ["id", "fileName", "path", "mimeType", "url"],
+            attributes: ["fileName", "path", "mimeType", "url"],
           },
         ],
       },
     ],
   });
 
+  // Calculate available credits for hosts (same as login)
+  let totalLimit = 1;
+  if (updatedUser && updatedUser.role === Role.HOST) {
+    const rooms = await Room.count({
+      where: {
+        userId: updatedUser.id,
+      },
+    });
+
+    // Get user memberships
+    const userMemberships = await Payment.findAll({
+      attributes: ["id", "status"],
+      include: [
+        {
+          model: MembershipType,
+          attributes: ["id", "name", "limit"],
+        },
+      ],
+      where: {
+        userId: updatedUser.id,
+        status: PaymentStatus.COMPLETED,
+      },
+    });
+
+    if (userMemberships && userMemberships.length > 0) {
+      totalLimit = userMemberships.reduce((acc, membership) => {
+        if (
+          membership.membershipType &&
+          typeof membership.membershipType.limit === "number"
+        ) {
+          return acc + membership.membershipType.limit;
+        }
+        return acc;
+      }, 0);
+    }
+
+    totalLimit = totalLimit - rooms;
+  }
+
+  const responseData = {
+    user: updatedUser,
+    availableCredits:
+      updatedUser && updatedUser.role === Role.HOST
+        ? totalLimit > 0
+          ? totalLimit
+          : 0
+        : undefined,
+  };
+
   new ApiResponse({
     status: 200,
     message: "Profile updated successfully",
-    data: updatedUser,
+    data: responseData,
   }).send(res);
 };
 
