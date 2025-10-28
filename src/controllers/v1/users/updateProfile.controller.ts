@@ -82,7 +82,7 @@ const updateProfile = async (req: Request, res: Response) => {
       const newAvatar = await createMedia({
         user: userRecord,
         file: avatarFile,
-        directory: FileStorageDirectory.AVATAR,
+        directory: FileStorageDirectory.DOCUMENTS,
       });
 
       profileUpdateData.avatarId = newAvatar.id;
