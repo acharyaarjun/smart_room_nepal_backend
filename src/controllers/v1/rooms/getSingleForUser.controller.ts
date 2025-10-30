@@ -115,20 +115,25 @@ const getSingleForUser = async (req: Request, res: Response) => {
 
   // Track recently viewed - only if user is authenticated
   if (user) {
-    // Remove existing entry if it exists
-    await RecentlyViewed.destroy({
+    // Use upsert to update existing entry or create new one
+    // This updates the timestamp for recently viewed sorting
+    const [recentlyViewed, created] = await RecentlyViewed.findOrCreate({
       where: {
         userId: user.id,
         roomId: room.id,
       },
-      force: true,
+      defaults: {
+        userId: user.id,
+        roomId: room.id,
+      },
     });
 
-    // Add new entry
-    await RecentlyViewed.create({
-      userId: user.id,
-      roomId: room.id,
-    });
+    // If record already exists, update it to refresh the timestamp
+    if (!created) {
+      await recentlyViewed.update({
+        updatedAt: new Date(),
+      });
+    }
   }
 
   new ApiResponse({

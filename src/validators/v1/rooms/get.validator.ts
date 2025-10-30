@@ -162,6 +162,49 @@ const getValidator = (): ValidationChain[] => {
           MaxCapacity
         ).join(", ")}`
       ),
+    query("latitude")
+      .optional()
+      .isFloat({ min: -90, max: 90 })
+      .withMessage("Latitude must be a valid number between -90 and 90")
+      .bail()
+      .toFloat()
+      .custom((value, { req }) => {
+        // If latitude is provided, longitude must also be provided
+        if (value && !req.query?.longitude) {
+          throw new Error("Longitude is required when latitude is provided");
+        }
+        return true;
+      }),
+    query("longitude")
+      .optional()
+      .isFloat({ min: -180, max: 180 })
+      .withMessage("Longitude must be a valid number between -180 and 180")
+      .bail()
+      .toFloat()
+      .custom((value, { req }) => {
+        // If longitude is provided, latitude must also be provided
+        if (value && !req.query?.latitude) {
+          throw new Error("Latitude is required when longitude is provided");
+        }
+        return true;
+      }),
+    query("radius")
+      .optional()
+      .isFloat({ min: 0.1, max: 100 })
+      .withMessage(
+        "Radius must be a number between 0.1 and 100 (in kilometers)"
+      )
+      .bail()
+      .toFloat()
+      .custom((value, { req }) => {
+        // Radius can only be used with latitude and longitude
+        if (value && (!req.query?.latitude || !req.query?.longitude)) {
+          throw new Error(
+            "Radius requires both latitude and longitude parameters"
+          );
+        }
+        return true;
+      }),
   ];
 };
 export default getValidator;
